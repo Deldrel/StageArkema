@@ -1,0 +1,213 @@
+WITH data AS (
+  SELECT 
+    *
+  FROM
+    "myDatabase"."myTable" 
+  WHERE
+    measure_name='temperature'
+  ORDER BY time DESC
+  LIMIT 
+    10000
+)
+SELECT 
+  CREATE_TIME_SERIES(time, measure_value::bigint)
+FROM
+  data
+
+----------------------------------------------------------------------------------
+
+WITH cte AS (
+    SELECT 
+        time,
+        measure_name,
+        measure_value::bigint,
+        ROW_NUMBER() OVER (PARTITION BY measure_name ORDER BY time) row_number,
+        LAG(measure_value::bigint) OVER (PARTITION BY measure_name ORDER BY time) as lg,
+        LEAD(measure_value::bigint) OVER (PARTITION BY measure_name ORDER BY time) as ld
+    FROM
+        "myDatabase"."myTable"
+    WHERE
+      measure_name='temperature'
+)
+SELECT
+    time,
+    measure_name,
+    measure_value::bigint
+FROM
+    cte
+WHERE
+    row_number IN (1,
+        (SELECT
+            COUNT(*)
+        FROM
+            cte
+        WHERE
+            measure_name = cte.measure_name)
+    )
+    OR measure_value::bigint != lg
+    OR measure_value::bigint != ld
+ORDER BY time
+
+-------------------------------------------------------------------------------------
+
+WITH data AS (
+  SELECT 
+    *
+  FROM
+    "myDatabase"."myTable" 
+  WHERE
+    measure_name='brightness'
+  ORDER BY time DESC
+  LIMIT 
+    10000
+)
+SELECT 
+  CREATE_TIME_SERIES(time, measure_value::bigint)
+FROM
+  data
+
+-----------------------------------------------------------------------------------
+
+WITH data AS (
+  SELECT 
+    *
+  FROM
+    "myDatabase"."myTable" 
+  WHERE
+    measure_name='brightness'
+  ORDER BY time DESC
+  LIMIT 
+    10000
+),
+average AS (
+  SELECT
+    AVG(measure_value::bigint) 
+      OVER 
+        (ORDER BY time ROWS BETWEEN 359 PRECEDING AND CURRENT ROW) as average_values,
+    time
+  FROM
+    data
+)
+SELECT
+  CREATE_TIME_SERIES(time, average_values)
+FROM
+  average
+
+----------------------------------------------------------------------------------
+
+WITH data AS (
+  SELECT 
+    *,
+    ROW_NUMBER() OVER (ORDER BY time) as row_num
+  FROM
+    "myDatabase"."myTable" 
+  WHERE
+    measure_name='brightness'
+  ORDER BY time DESC
+  LIMIT 
+    10000
+),
+average AS (
+  SELECT
+    AVG(measure_value::bigint) 
+      OVER 
+        (ORDER BY time ROWS BETWEEN 9 PRECEDING AND CURRENT ROW) as average_values,
+    time
+  FROM
+    data
+  WHERE row_num % 10 = 1
+)
+SELECT
+  CREATE_TIME_SERIES(time, average_values)
+FROM
+  average
+
+-----------------------------------------------------------------------------------
+
+WITH data AS (
+  SELECT 
+    *
+  FROM
+    "myDatabase"."myTable" 
+  WHERE
+    measure_name='onboardSensorTemp'
+  ORDER BY time DESC
+  LIMIT 
+    10000
+)
+SELECT 
+  CREATE_TIME_SERIES(time, measure_value::bigint)
+FROM
+  data
+
+---------------------------------------------------------------------------------
+
+WITH data AS (
+  SELECT 
+    *
+  FROM
+    "myDatabase"."myTable" 
+  WHERE
+    measure_name='humidity'
+  ORDER BY time DESC
+  LIMIT 
+    10000
+)
+SELECT 
+  CREATE_TIME_SERIES(time, measure_value::bigint)
+FROM
+  data
+
+-----------------------------------------------------------------------------------
+
+WITH data AS (
+  SELECT 
+    *
+  FROM
+    "myDatabase"."myTable" 
+  WHERE
+    measure_name='baroTemp'
+  ORDER BY time DESC
+  LIMIT 
+    10000
+)
+SELECT 
+  CREATE_TIME_SERIES(time, measure_value::bigint)
+FROM
+  data
+
+-----------------------------------------------------------------------------------
+
+WITH data AS (
+  SELECT 
+    *
+  FROM
+    "myDatabase"."myTable" 
+  WHERE
+    measure_name='pressure'
+  ORDER BY time DESC
+  LIMIT 
+    10000
+)
+SELECT 
+  CREATE_TIME_SERIES(time, measure_value::bigint / 100)
+FROM
+  data
+
+------------------------------------------------------------------------------------
+
+WITH data AS (
+  SELECT 
+    *
+  FROM
+    "myDatabase"."myTable" 
+  WHERE
+    measure_name='gentime'
+  ORDER BY time DESC
+  LIMIT 
+    10000
+)
+SELECT 
+  CREATE_TIME_SERIES(time, to_milliseconds(time) - CAST(measure_value::varchar as bigint))
+FROM
+  data
