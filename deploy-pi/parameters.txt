@@ -1,0 +1,2 @@
+DatabaseName=test1
+TableName=test2

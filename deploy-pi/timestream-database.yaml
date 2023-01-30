@@ -1,0 +1,16 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  MyTimestreamDatabase:
+    Type: 'AWS::Timestream::Database'
+    Properties:
+      DatabaseName: !Ref DatabaseName
+  MyTimestreamTable:
+    Type: 'AWS::Timestream::Table'
+    Properties:
+      DatabaseName: !Ref DatabaseName
+      TableName: !Ref TableName
+      RetentionProperties:
+        MemoryStoreRetentionPeriodInHours: 24
+        MagneticStoreRetentionPeriodInDays: 7
+

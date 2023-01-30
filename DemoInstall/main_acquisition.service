@@ -1,0 +1,13 @@
+[Unit]
+# Human readable name of the unit
+Description=Python3. Read sensors Thinhistorian
+
+[Service]
+# Command to execute when the service is started
+Type=simple
+ExecStart=/usr/bin/python /home/pi/RaspberryDemo/main_mqtt.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
